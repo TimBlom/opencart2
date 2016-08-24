@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>OCMOD MYPARCEL</name>
+	<version>1.2.2</version>
+	<code>myparcel</code>
+	<author>balticode.com</author>
+	
+	
+	<file path="admin/controller/sale/order.php">
+		<operation>
+			<search><![CDATA[protected function getList() {]]></search>
+			<add position="after"><![CDATA[
+                        $check_if_table = $this->db->query("SHOW TABLES LIKE '" . DB_PREFIX . "orders_myparcel'");
+if ($check_if_table->num_rows < 1)
+{
+   $this->db->query("CREATE TABLE IF NOT EXISTS " . DB_PREFIX . "orders_myparcel (`orders_myparcel_id` int(11) NOT NULL AUTO_INCREMENT, `orders_id` int(11) NOT NULL, `consignment_id` bigint(20) NOT NULL, `retour` tinyint(1) NOT NULL DEFAULT '0', `tracktrace` varchar(32) NOT NULL, `postcode` varchar(6) NOT NULL, `tnt_status` varchar(255) NOT NULL, `tnt_updated_on` datetime NOT NULL, `tnt_final` tinyint(1) NOT NULL DEFAULT '0', PRIMARY KEY (`orders_myparcel_id`));");
+}
+]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$results = $this->model_sale_order->getOrders($filter_data);
+
+		foreach ($results as $result) {]]></search>
+			<add position="after"><![CDATA[
+$query = "SELECT * FROM `" . DB_PREFIX . "orders_myparcel` WHERE `orders_id` = '" . $result['order_id'] . "'";
+]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['order_id'      => $result['order_id'],]]></search>
+			<add position="after"><![CDATA[
+'vendors'      => $this->db->query( $query ),
+]]></add>
+		</operation>
+	</file>
+	<file path="admin/view/template/sale/order_list.tpl">
+                <operation>
+			<search><![CDATA[<td class="text-right"><?php echo $column_action; ?></td>]]></search>
+			<add position="before"><![CDATA[<td class="text-left" style="text-align: center;">
+                <span><?php echo "MyParcel Labels"; ?></span>
+                <?php $_SESSION['MYPARCEL_VISIBLE_CONSIGNMENTS'] = ''; ?>
+		<script type="text/javascript">var mano_admin_path="<?php echo HTTP_SERVER; ?>"</script>
+                <script type="text/javascript" src="view/javascript/myparcel_plugin.js"></script>
+			<input type="checkbox" onclick="selectAllConsignmentsForPrint(this);">
+                <a class="myparcel-pdf myparight" onclick="return printConsignmentSelection();" href="#">
+                  <img src="<?php echo HTTP_SERVER; ?>model/myparcel/images/myparcel_pdf.png">
+                </a>
+		<a class="myparcel-pdf myparight" onclick="return processConsignmentSelection('24');" href="#">
+                  <img src="<?php echo HTTP_SERVER; ?>model/myparcel/images/myparcel_pdf_add.png">
+                </a>
+              </td>]]></add>
+		</operation>
+		
+		
+		
+		<!-- <operation>
+			<search><![CDATA[<button type="submit" id="button-shipping" form="form-order" formaction="<?php echo $shipping; ?>" data-toggle="tooltip" title="<?php echo $button_shipping_print; ?>" class="btn btn-info"><i class="fa fa-truck"></i></button>]]></search>
+			<add position="before"><![CDATA[
+                <input type="checkbox" onclick="selectAllConsignmentsForPrint(this);">
+                <a class="myparcel-pdf myparight" onclick="return printConsignmentSelection();" href="#">
+                  <img src="<?php echo HTTP_SERVER; ?>model/myparcel/images/myparcel_pdf.png">
+                </a>
+		<a class="myparcel-pdf myparight" onclick="return processConsignmentSelection('24');" href="#">
+                  <img src="<?php echo HTTP_SERVER; ?>model/myparcel/images/myparcel_pdf_add.png">
+                </a>
+              ]]></add>
+		</operation> -->
+                <!-- <operation>
+			<search><![CDATA[<td><input type="text" name="filter_date_modified" value="<?php echo $filter_date_modified; ?>" size="12" class="date" /></td>]]></search>
+			<add position="after"><![CDATA[<td class="left" style="text-align: center;">
+                <input type="checkbox" onclick="selectAllConsignmentsForPrint(this);">
+                <a class="myparcel-pdf myparight" onclick="return printConsignmentSelection();" href="#">
+                  <img src="<?php echo HTTP_SERVER; ?>model/myparcel/images/myparcel_pdf.png">
+                </a>
+		<a class="myparcel-pdf myparight" onclick="return processConsignmentSelection('24');" href="#">
+                  <img src="<?php echo HTTP_SERVER; ?>model/myparcel/images/myparcel_pdf_add.png">
+                </a>
+              </td>]]></add>
+		</operation> -->
+                <operation>
+			<search><![CDATA[<?php if ($orders) { ?>]]></search>
+			<add position="replace"><![CDATA[<?php if ($orders) { $order_inc=0; ?>]]></add>
+		</operation>
+                <operation>
+			<search><![CDATA[<input type="checkbox" name="selected[]" value="<?php echo $order['order_id']; ?>" checked="checked" />]]></search>
+			<add position="replace"><![CDATA[<input id="cb<?php echo $order_inc++;?>" type="checkbox" name="selected[]" value="<?php echo $order['order_id']; ?>" checked="checked" />]]></add>
+		</operation>
+                <operation>
+			<search><![CDATA[<input type="checkbox" name="selected[]" value="<?php echo $order['order_id']; ?>" />]]></search>
+			<add position="replace"><![CDATA[<input id="cb<?php echo $order_inc++;?>" type="checkbox" name="selected[]" value="<?php echo $order['order_id']; ?>" />]]></add>
+		</operation>
+                <operation>
+			<search><![CDATA[<td class="text-left"><?php echo $order['date_modified']; ?></td>]]></search>
+			<add position="after"><![CDATA[<td style="text-align: right;">
+                <div id="mypa_exist_<?php echo $order['order_id']; ?>" style="display: inline-block;">
+                <?php
+                    /* $query = "SELECT * FROM `" . DB_PREFIX . "orders_myparcel` WHERE `orders_id` = '" . $order['order_id'] . "'";
+                    $vendors = $db->query( $query );*/
+		    $vendors = $order['vendors'];
+                    for ($i2=0, $n=count( $vendors->rows ); $i2 < $n; $i2++) 
+                    {
+                            $row = $vendors->rows[$i2];
+                            
+                                       
+                
+                        $_SESSION['MYPARCEL_VISIBLE_CONSIGNMENTS'] .= $row['consignment_id'] . '|';
+                        $mypa_tracktrace_link = 'https://www.postnlpakketten.nl/klantenservice/tracktrace/basicsearch.aspx?lang=nl&B=' . $row['tracktrace'] . '&P=' . $row['postcode'];
+                        $mypa_tnt_status      = empty($row['tnt_status']) ? 'Track&Trace' : $row['tnt_status'];
+                        $mypa_pdf_image       = ($row['retour'] == 1) ? 'myparcel_retour.png' : 'myparcel_pdf.png';
+                        echo '<div><input type="checkbox" value="' . $row['consignment_id'] . '" class="mypaleft mypacheck" /><a href="' . $mypa_tracktrace_link . '" target="_blank">' . $mypa_tnt_status . '</a><a href="#" onclick="return printConsignments(\'' . $row['consignment_id'] . '\');" class="myparcel-pdf"><img src="'.HTTP_SERVER.'model/myparcel/images/'.$mypa_pdf_image.'" /></a></div>';
+                    }
+                ?>
+		</div>
+                <span class="mypafunc" style="text-align: right;">
+                  <a onclick="return createNewConsignment('<?php echo $order['order_id']; ?>');" class="myparcel-consignment-new" href="#">
+                    <img src="<?php echo HTTP_SERVER; ?>model/myparcel/images/myparcel_pdf_add.png">
+                  </a>
+                  <a onclick="return createNewConsignment('<?php echo $order['order_id']; ?>', true);" class="myparcel-consignment-retour" href="#">
+                    <img src="<?php echo HTTP_SERVER; ?>model/myparcel/images/myparcel_retour_add.png">
+                  </a>
+                </span>
+              </td>]]></add>
+		</operation>
+	</file>
+        
+        <file path="catalog/view/theme/*/template/checkout/shipping_address.tpl">
+                <operation>
+			<search><![CDATA[<div id="shipping-new" style="display: <?php echo ($addresses ? 'none' : 'block'); ?>;">]]></search>
+			<add position="after"><![CDATA[<?php
+			global $config;
+			if ($config->get('myparcel_module_frontend')) { ?>
+<p>Kies <span onclick="return pakjegemak();" style="cursor: pointer; text-decoration: underline">hier</span> uw locatie indien u het pakket op een PostNL afleverlocatie wil laten bezorgen.</p>
+<?php
+    $username = $config->get('myparcel_module_username');
+    $api_key  = $config->get('myparcel_module_api_key');
+
+    $webshop = HTTP_SERVER . 'catalog/view/theme/default/template/module/myparcel-passdata-opencart.html';//JURI::base().DS.'components'.DS.'com_myparcel'.DS. '/myparcel-passdata-virtuemart.html';
+    $uw_hash = hash_hmac('sha1', $username . 'MyParcel' . $webshop, $api_key);
+?>
+<script type="text/javascript">
+var pg_popup;
+function pakjegemak()
+{
+    if(!pg_popup || pg_popup.closed)
+    {
+        pg_popup = window.open(
+            '//www.myparcel.nl/pakjegemak-locatie?hash=<?php echo $uw_hash; ?>&webshop=<?php echo urlencode($webshop); ?>&user=<?php echo $username; ?>',
+            'myparcel-pakjegemak',
+            'width=980,height=680,dependent,resizable,scrollbars'
+        );
+        if(window.focus) { pg_popup.focus(); }
+    }
+    else
+    {
+        pg_popup.focus();
+    }
+    return false;
+}
+</script>
+<?php } ?>]]></add>
+		</operation>
+        </file>
+        <file path="catalog/view/theme/*/template/checkout/guest_shipping.tpl">
+                <operation>
+			<search><![CDATA[<form class="form-horizontal">]]></search>
+			<add position="before"><![CDATA[<?php
+			global $config;
+			if ($config->get('myparcel_module_frontend')) { ?>
+<p>Kies <span onclick="return pakjegemak();" style="cursor: pointer; text-decoration: underline">hier</span> uw locatie indien u het pakket op een PostNL afleverlocatie wil laten bezorgen.</p>
+<?php
+    $username = $config->get('myparcel_module_username');
+    $api_key  = $config->get('myparcel_module_api_key');
+
+    $webshop = HTTP_SERVER . 'catalog/view/theme/default/template/module/myparcel-passdata-opencart.html';//JURI::base().DS.'components'.DS.'com_myparcel'.DS. '/myparcel-passdata-virtuemart.html';
+    $uw_hash = hash_hmac('sha1', $username . 'MyParcel' . $webshop, $api_key);
+?>
+<script type="text/javascript">
+var pg_popup;
+function pakjegemak()
+{
+    if(!pg_popup || pg_popup.closed)
+    {
+        pg_popup = window.open(
+            '//www.myparcel.nl/pakjegemak-locatie?hash=<?php echo $uw_hash; ?>&webshop=<?php echo urlencode($webshop); ?>&user=<?php echo $username; ?>',
+            'myparcel-pakjegemak',
+            'width=980,height=680,dependent,resizable,scrollbars'
+        );
+        if(window.focus) { pg_popup.focus(); }
+    }
+    else
+    {
+        pg_popup.focus();
+    }
+    return false;
+}
+</script>
+<?php } ?>]]></add>
+		</operation>
+        </file>
+
+</modification>
