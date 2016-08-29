@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <modification>
 	<name>OCMOD MYPARCEL</name>
-	<version>1.3.5</version>
+	<version>1.3.6</version>
 	<code>myparcel</code>
 	<author>balticode.com</author>
 	
@@ -266,8 +266,27 @@ function pakjegemak()
 	<ignoreif><![CDATA[// a_vqmod_d_quickcheckout.xml]]></ignoreif>
 	<operation>
 		<search><![CDATA[$this->document->addScript('catalog/view/javascript/d_quickcheckout/compress/d_quickcheckout.min.js');]]></search>
-		<add position="after"><![CDATA[$this->document->addScript('catalog/view/javascript/myparcel/myparcel_frontend.js');
-		]]></add>
+		<add position="after"><![CDATA[$this->document->addScript('catalog/view/javascript/myparcel/myparcel_frontend.js');]]></add>
+	</operation>
+</file>
+
+<file path="catalog/view/theme/*/template/common/header.tpl">
+	<ignoreif><![CDATA[// a_vqmod_d_quickcheckout.xml]]></ignoreif>
+	<operation>
+		<search><![CDATA[</head>]]></search>
+		<add position="before"><![CDATA[<?php
+global $config;
+if ($config->get('myparcel_module_frontend')) {
+$username = $config->get('myparcel_module_username');
+$api_key = $config->get('myparcel_module_api_key');
+$webshop = HTTP_SERVER . 'catalog/view/theme/default/template/module/myparcel-passdata-opencart.html';
+$uw_hash = hash_hmac('sha1', $username . 'MyParcel' . $webshop, $api_key);
+$myparcel_url = '//www.myparcel.nl/pakjegemak-locatie?hash=' . $uw_hash . '&webshop=' . urlencode($webshop) . '&user=' . $username;
+echo '<script> var MYPARCEL_PAKJEGEMAK_URL = "' . $myparcel_url . '"</script>';
+}else{
+echo '<script> var MYPARCEL_PAKJEGEMAK_URL = 0;</script>';
+}
+?>]]></add>
 	</operation>
 </file>
 
