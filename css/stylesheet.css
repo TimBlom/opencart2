@@ -99,7 +99,7 @@ ol > li, ul > li {
     color: #fff;
     text-align: center;
     background-color: #1eb9c4;
-    background-image: linear-gradient(120deg, #00c2f1, #5c5b5b);
+    background-image: linear-gradient(120deg, #57595a, #1eb9c4);
 }
 
 @media screen and (min-width: 64em) {
