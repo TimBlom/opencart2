@@ -1,7 +1,13 @@
-Via FTP:
+# Opencart 2
+Voor de handleiding en meer informatie ga naar: 
+https://myparcelnl.github.io/opencart2/
+
+
+
+## Via FTP:
 1. Upload folders from "upload" directory to Opencart instalation root directory.
 
-From CMS:
+## From CMS:
 
 2. Go to System->Settings>[edit]->FTPExtensions and fill FTP data.
 
