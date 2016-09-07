@@ -4,10 +4,10 @@ https://myparcelnl.github.io/opencart2/
 
 
 
-## Via FTP:
+## Install via FTP:
 1. Upload folders from "upload" directory to Opencart instalation root directory.
 
-## From CMS:
+## Install from CMS:
 
 2. Go to System->Settings>[edit]->FTPExtensions and fill FTP data.
 
