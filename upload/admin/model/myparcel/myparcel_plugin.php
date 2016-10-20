@@ -327,6 +327,39 @@ function _splitStreet($fullStreet)
     return $matches;
 }
 
+/** START @Since the fix for negative house number (64-69)
+ * 64 is house number and 69 is additional number
+ **/
+function _splitMultipleHouseNumberStreet($address, $force=true)
+{
+    $ret = array();
+    $ret['house_number']    = '';
+    $ret['number_addition'] = '';
+
+    $address = str_replace(array('?', '*', '[', ']', ',', '!'), ' ', $address);
+    $address = preg_replace('/\s\s+/', ' ', $address);
+
+    preg_match('/^([0-9]*)(.*?)([0-9]+)(.*)/', $address, $matches);
+
+    if (!empty($matches[2]))
+    {
+        $ret['street']          = trim($matches[1] . $matches[2]);
+        $ret['house_number']    = trim($matches[3]);
+        $ret['number_addition'] = trim($matches[4]);
+    }
+    else // no street part
+    {
+        $ret['street'] = $address;
+    }
+
+    if ($force) {
+        $ret['force_addition_number'] = true;
+    }
+
+    return $ret;
+}
+/** END @Since the fix for negative house number (64-69) **/
+
 function getAddressComponents($address)
 {
     $matches = _splitStreet($address);
@@ -345,7 +378,10 @@ function getAddressComponents($address)
 	/** START @Since the fix for negative house number (64-69) **/
     if (strlen($ret['street']) && substr($ret['street'], -1) == '-') {
         $ret['street'] = str_replace(' -', '', $ret['street']);
-        return getAddressComponents( $ret['street']);
+		$ret['street'] = str_replace('-', '', $ret['street']);
+        $ret['street'] .= ' -' . $ret['house_number'];
+        $ret['force_addition_number'] = true;
+        return _splitMultipleHouseNumberStreet( $ret['street'] );
     }
     /** END @Since the fix for negative house number (64-69) **/
 	

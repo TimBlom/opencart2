@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <modification>
 	<name>OCMOD MYPARCEL</name>
-	<version>1.3.6</version>
+	<version>1.3.9</version>
 	<code>myparcel</code>
 	<author>balticode.com</author>
 	
@@ -22,7 +22,45 @@
 ]]></add>
         </operation>
     </file>
-	
+
+	<!-- This fix is for Opencart version 2.3.0.2 -->
+	<file path="catalog/controller/common/header.php">
+		<operation>
+			<search><![CDATA[$data['telephone'] = $this->config->get('config_telephone');]]></search>
+			<add position="after"><![CDATA[$data['myparcel_config'] = $this->config;]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/checkout/shipping_address.php">
+		<operation>
+			<search><![CDATA[$data['button_upload'] = $this->language->get('button_upload');]]></search>
+			<add position="after"><![CDATA[$data['myparcel_config'] = $this->config;]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/checkout/guest_shipping.php">
+		<operation>
+			<search><![CDATA[$data['entry_zone'] = $this->language->get('entry_zone');]]></search>
+			<add position="after"><![CDATA[$data['myparcel_config'] = $this->config;]]></add>
+		</operation>
+	</file>
+	<file path="admin/controller/common/header.php">
+		<operation>
+			<search><![CDATA[return $this->load->view('common/header', $data);]]></search>
+			<add position="before"><![CDATA[if(version_compare(VERSION, '2.3.0.0', '>=')) {
+			$source_file = DIR_APPLICATION . 'controller/common/myparcel.php';
+			$destination_folder = DIR_APPLICATION . 'controller/extension/module/';
+			$destination_file = DIR_APPLICATION . 'controller/extension/module/myparcel.php';
+
+			if (!is_file($destination_file) && is_file($source_file)) {
+				@mkdir($destination_folder, 0777, true);
+				@copy($source_file, $destination_file);
+				@unlink(DIR_APPLICATION . 'controller/module/myparcel.php');
+			}
+		}
+]]></add>
+		</operation>
+	</file>
+	<!-- End fix for Opencart version 2.3.0.2 -->
+
 	<file path="admin/controller/sale/order.php">
 		<operation>
 			<search><![CDATA[protected function getList() {]]></search>
@@ -142,6 +180,9 @@ if ($check_if_table->num_rows < 1)
                 </span>
               </td>]]></add>
 		</operation>
+	</file>
+
+	<file path="admin/view/template/sale/order_list.tpl">
 		<operation>
 			<search><![CDATA[<td class="text-left"><?php echo $order['date_modified']; ?></td>]]></search>
 			<add position="after"><![CDATA[<td style="text-align: right;">
@@ -186,12 +227,15 @@ if ($check_if_table->num_rows < 1)
               </td>]]></add>
 		</operation>
 	</file>
-        
+
         <file path="catalog/view/theme/*/template/checkout/shipping_address.tpl">
                 <operation>
 			<search><![CDATA[<div id="shipping-new" style="display: <?php echo ($addresses ? 'none' : 'block'); ?>;">]]></search>
 			<add position="after"><![CDATA[<?php
 			global $config;
+			if (!$config) {
+  				$config = $myparcel_config;
+			}
 			if ($config->get('myparcel_module_frontend')) { ?>
 <p>Kies <span onclick="return pakjegemak();" style="cursor: pointer; text-decoration: underline">hier</span> uw locatie indien u het pakket op een PostNL afleverlocatie wil laten bezorgen.</p>
 <?php
@@ -229,6 +273,9 @@ function pakjegemak()
 			<search><![CDATA[<form class="form-horizontal">]]></search>
 			<add position="before"><![CDATA[<?php
 			global $config;
+			if (!$config) {
+  				$config = $myparcel_config;
+			}
 			if ($config->get('myparcel_module_frontend')) { ?>
 <p>Kies <span onclick="return pakjegemak();" style="cursor: pointer; text-decoration: underline">hier</span> uw locatie indien u het pakket op een PostNL afleverlocatie wil laten bezorgen.</p>
 <?php
@@ -276,6 +323,9 @@ function pakjegemak()
 		<search><![CDATA[</head>]]></search>
 		<add position="before"><![CDATA[<?php
 global $config;
+if (!$config) {
+  $config = $myparcel_config;
+}
 if ($config->get('myparcel_module_frontend')) {
 $username = $config->get('myparcel_module_username');
 $api_key = $config->get('myparcel_module_api_key');
@@ -290,6 +340,10 @@ echo '<script> var MYPARCEL_PAKJEGEMAK_URL = 0;</script>';
 	</operation>
 </file>
 
+<file path="catalog/view/theme/*/template/common/header.tpl">
+
+</file>
+
 <file path="catalog/view/theme/*/template/journal2/checkout/address_form.tpl">
 <operation>
 	<search><![CDATA[<?php if ($name): ?>]]></search>
@@ -297,6 +351,9 @@ echo '<script> var MYPARCEL_PAKJEGEMAK_URL = 0;</script>';
 	<?php if ($type == 'shipping') : ?>
 	<?php
 	global $config;
+	if (!$config) {
+  		$config = $myparcel_config;
+	}
 	if ($config->get('myparcel_module_frontend')) { ?>
 		<p>Kies <span onclick="return pakjegemak();" style="cursor: pointer; text-decoration: underline">hier</span> uw locatie indien u het pakket op een PostNL afleverlocatie wil laten bezorgen.</p>
 		<br/>

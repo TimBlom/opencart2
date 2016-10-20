@@ -12,6 +12,12 @@ class ControllerModuleMyparcel extends Controller {
 
 			global $db;
 
+			/** @Since Opencart version 2.3.0.2 **/
+			if (empty($db)) {
+				$db = $this->db;
+			}
+			/** End fix for Opencart version 2.3.0.2 **/
+			
 			$check_if_table = $db->query("SHOW TABLES LIKE '" . DB_PREFIX . "orders_myparcel_pg_address'");
 			if ($check_if_table->num_rows < 1)
 			{
