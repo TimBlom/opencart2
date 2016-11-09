@@ -22,8 +22,13 @@
         Installatie- gebruikershandleiding
     </h1>
     <h2 class="project-tagline">
-        OpenCart MyParcel plug-in 2
+        OpenCart MyParcel plug-in <span id="current_version"></span>
     </h2>
+    <script>
+        $.get('https://api.github.com/repos/myparcelnl/opencart2/releases/latest', function (data) {
+            document.write(data.name);
+        });
+    </script>
     <a target="_blank" class="btn" href="https://github.com/myparcelnl/opencart2">GitHub</a>
     <a target="_blank" class="btn" href="https://github.com/myparcelnl/opencart2/releases">Alle updates</a>
     <a target="_blank" class="btn" href="https://github.com/myparcelnl/opencart2/archive/v1.3.6.zip">Laatste versie</a>
