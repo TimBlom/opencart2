@@ -26,7 +26,7 @@
     </h2>
     <script>
         $.get('https://api.github.com/repos/myparcelnl/opencart2/releases/latest', function (data) {
-            document.write(data.name);
+            $('#current_version').html(data.name);
         });
     </script>
     <a target="_blank" class="btn" href="https://github.com/myparcelnl/opencart2">GitHub</a>
